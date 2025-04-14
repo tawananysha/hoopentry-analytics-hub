@@ -18,6 +18,11 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 const Dashboard: React.FC = () => {
   const {
@@ -51,6 +56,31 @@ const Dashboard: React.FC = () => {
     hour,
     count,
   }));
+
+  // Create a custom pie chart label renderer function that avoids overlapping
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+    // Only show label if the segment is significant enough (more than 5%)
+    if (percent < 0.05) return null;
+    
+    const RADIAN = Math.PI / 180;
+    // Position label slightly farther from the pie
+    const radius = outerRadius * 1.2;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#333"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={12}
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   // Function to handle exporting data to CSV
   const handleExportCSV = () => {
@@ -191,8 +221,8 @@ const Dashboard: React.FC = () => {
                       data={ticketTypeData}
                       cx="50%"
                       cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
+                      label={renderCustomizedLabel}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -202,7 +232,7 @@ const Dashboard: React.FC = () => {
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => [`${value} entries`, 'Count']} />
-                    <Legend />
+                    <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
@@ -244,8 +274,8 @@ const Dashboard: React.FC = () => {
                       data={genderData}
                       cx="50%"
                       cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
+                      label={renderCustomizedLabel}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -255,7 +285,7 @@ const Dashboard: React.FC = () => {
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => [`${value} entries`, 'Count']} />
-                    <Legend />
+                    <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
