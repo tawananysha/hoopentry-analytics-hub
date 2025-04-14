@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Define ticket types
+// Update ticket types to match new categories
 export type TicketType = 'Child' | 'Student' | 'Adult';
 
 // Define payment methods

@@ -26,7 +26,10 @@ import {
   CreditCard, 
   Banknote, 
   Ticket, 
-  UserCheck
+  UserCheck,
+  Child,
+  GraduationCap,
+  UserRound
 } from 'lucide-react';
 import { useAppContext, Gender, PaymentMethod, calculateTicketDetails } from '@/context/AppContext';
 import BasketballLogo from '@/components/BasketballLogo';
@@ -38,6 +41,7 @@ const EntryForm: React.FC = () => {
   // Form state
   const [name, setName] = useState<string>('');
   const [age, setAge] = useState<string>('');
+  const [ageCategory, setAgeCategory] = useState<'Child' | 'Student' | 'Adult'>('Adult');
   const [gender, setGender] = useState<Gender>('Male');
   const [isStudent, setIsStudent] = useState<boolean>(false);
   const [studentCardVerified, setStudentCardVerified] = useState<boolean>(false);
@@ -47,10 +51,20 @@ const EntryForm: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [ticketInfo, setTicketInfo] = useState<{ ticketType: string; ticketPrice: number } | null>(null);
 
-  // Calculate ticket type and price when relevant fields change
+  // Determine age category when age changes
   useEffect(() => {
     const parsedAge = parseInt(age);
     if (!isNaN(parsedAge)) {
+      if (parsedAge < 10) {
+        setAgeCategory('Child');
+        setIsStudent(false);
+        setStudentCardVerified(false);
+      } else if (isStudent && studentCardVerified) {
+        setAgeCategory('Student');
+      } else {
+        setAgeCategory('Adult');
+      }
+
       const details = calculateTicketDetails(parsedAge, isStudent, studentCardVerified);
       setTicketInfo(details);
     } else {
@@ -83,9 +97,9 @@ const EntryForm: React.FC = () => {
       return;
     }
 
-    // Double-check student card verification
-    if (isStudent && !studentCardVerified && parsedAge >= 10) {
-      toast.error("Please verify the student card or uncheck the student option");
+    // Double-check student card verification for students
+    if (ageCategory === 'Student' && (!isStudent || !studentCardVerified)) {
+      toast.error("Please verify the student card");
       return;
     }
 
@@ -119,6 +133,7 @@ const EntryForm: React.FC = () => {
       // Reset form
       setName('');
       setAge('');
+      setAgeCategory('Adult');
       setGender('Male');
       setIsStudent(false);
       setStudentCardVerified(false);
@@ -197,32 +212,34 @@ const EntryForm: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="is-student"
-                        checked={isStudent}
-                        onCheckedChange={(checked) => {
-                          setIsStudent(checked as boolean);
-                          if (!checked) setStudentCardVerified(false);
-                        }}
-                      />
-                      <Label htmlFor="is-student">Is a Student</Label>
-                    </div>
-                    
-                    {isStudent && parseInt(age) >= 10 && (
-                      <div className="ml-6 flex items-center space-x-2 mt-2 p-2 bg-muted rounded-md">
+                  {parseInt(age) >= 10 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
                         <Checkbox
-                          id="student-card-verified"
-                          checked={studentCardVerified}
-                          onCheckedChange={(checked) => setStudentCardVerified(checked as boolean)}
+                          id="is-student"
+                          checked={isStudent}
+                          onCheckedChange={(checked) => {
+                            setIsStudent(checked as boolean);
+                            if (!checked) setStudentCardVerified(false);
+                          }}
                         />
-                        <Label htmlFor="student-card-verified" className="font-medium text-basketball-blue">
-                          Student card verified
-                        </Label>
+                        <Label htmlFor="is-student">Is a Student</Label>
                       </div>
-                    )}
-                  </div>
+                      
+                      {isStudent && (
+                        <div className="ml-6 flex items-center space-x-2 mt-2 p-2 bg-muted rounded-md">
+                          <Checkbox
+                            id="student-card-verified"
+                            checked={studentCardVerified}
+                            onCheckedChange={(checked) => setStudentCardVerified(checked as boolean)}
+                          />
+                          <Label htmlFor="student-card-verified" className="font-medium text-basketball-blue">
+                            Student card verified
+                          </Label>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   <div>
                     <Label htmlFor="payment-method" className="required">Payment Method</Label>
@@ -308,15 +325,18 @@ const EntryForm: React.FC = () => {
                           <BasketballLogo size={30} />
                           <h3 className="font-bold text-lg">HoopEntry</h3>
                         </div>
-                        <div className="px-3 py-1 bg-basketball-blue rounded-full text-white text-sm">
-                          {ticketInfo.ticketType}
+                        <div className="px-3 py-1 bg-basketball-blue rounded-full text-white text-sm flex items-center gap-2">
+                          {ageCategory === 'Child' && <Child className="h-4 w-4" />}
+                          {ageCategory === 'Student' && <GraduationCap className="h-4 w-4" />}
+                          {ageCategory === 'Adult' && <UserRound className="h-4 w-4" />}
+                          {ageCategory}
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-3 gap-2 mb-4">
                         <div>
                           <p className="text-xs text-muted-foreground">Ticket Type</p>
-                          <p className="font-medium">{ticketInfo.ticketType}</p>
+                          <p className="font-medium">{ageCategory}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Date</p>
@@ -341,7 +361,7 @@ const EntryForm: React.FC = () => {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Ticket Type:</span>
-                        <span className="font-semibold">{ticketInfo.ticketType}</span>
+                        <span className="font-semibold">{ageCategory}</span>
                       </div>
                     </div>
                   </div>
