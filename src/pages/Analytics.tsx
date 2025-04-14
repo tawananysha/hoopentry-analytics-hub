@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import {
   Users, 
   DollarSign, 
   BarChart, 
-  PieChart, 
+  PieChart as PieChartIcon, 
   Calendar, 
   ClipboardList, 
   UserCheck, 
@@ -28,6 +27,9 @@ import {
   Legend,
   LineChart,
   Line,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 import BasketballLogo from '@/components/BasketballLogo';
 
@@ -67,6 +69,31 @@ const Analytics: React.FC = () => {
   // Handle share report
   const handleShareReport = () => {
     toast.success('Report link copied to clipboard');
+  };
+
+  // Create a custom pie chart label renderer function that avoids overlapping
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+    // Only show label if the segment is significant enough (more than 5%)
+    if (percent < 0.05) return null;
+    
+    const RADIAN = Math.PI / 180;
+    // Position label slightly farther from the pie
+    const radius = outerRadius * 1.2;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#333"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={12}
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
   };
 
   return (
@@ -153,16 +180,24 @@ const Analytics: React.FC = () => {
                     <div className="h-60">
                       {entries.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <RechartsBarChart
-                            data={genderData}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="value" name="Attendees" fill="#0077C2" />
-                          </RechartsBarChart>
+                          <PieChart>
+                            <Pie
+                              data={genderData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={renderCustomizedLabel}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {genderData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={index === 0 ? '#0077C2' : index === 1 ? '#FF6B00' : '#33A1FF'} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => [`${value} attendees`, 'Count']} />
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                          </PieChart>
                         </ResponsiveContainer>
                       ) : (
                         <div className="flex items-center justify-center h-full">
@@ -191,16 +226,24 @@ const Analytics: React.FC = () => {
                     <div className="h-60">
                       {entries.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <RechartsBarChart
-                            data={revenueData}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="count" name="Attendees" fill="#FF6B00" />
-                          </RechartsBarChart>
+                          <PieChart>
+                            <Pie
+                              data={revenueData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={renderCustomizedLabel}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="count"
+                            >
+                              {revenueData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={index === 0 ? '#0077C2' : index === 1 ? '#33A1FF' : '#FF6B00'} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => [`${value} attendees`, 'Count']} />
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                          </PieChart>
                         </ResponsiveContainer>
                       ) : (
                         <div className="flex items-center justify-center h-full">
@@ -303,17 +346,24 @@ const Analytics: React.FC = () => {
                   <div className="h-80">
                     {entries.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart
-                          data={revenueData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="count" name="Attendance" fill="#FF6B00" />
-                        </RechartsBarChart>
+                        <PieChart>
+                          <Pie
+                            data={revenueData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="count"
+                          >
+                            {revenueData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={index === 0 ? '#0077C2' : index === 1 ? '#33A1FF' : '#FF6B00'} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [`${value} attendees`, 'Count']} />
+                          <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                        </PieChart>
                       </ResponsiveContainer>
                     ) : (
                       <div className="flex items-center justify-center h-full">
@@ -327,17 +377,24 @@ const Analytics: React.FC = () => {
                   <div className="h-80">
                     {entries.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart
-                          data={genderData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="value" name="Attendance" fill="#0077C2" />
-                        </RechartsBarChart>
+                        <PieChart>
+                          <Pie
+                            data={genderData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {genderData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={index === 0 ? '#0077C2' : index === 1 ? '#FF6B00' : '#33A1FF'} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [`${value} attendees`, 'Count']} />
+                          <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                        </PieChart>
                       </ResponsiveContainer>
                     ) : (
                       <div className="flex items-center justify-center h-full">
@@ -384,7 +441,7 @@ const Analytics: React.FC = () => {
           </Card>
         </TabsContent>
         
-        {/* Revenue Tab */}
+        {/* Revenue Tab - keep existing bar charts for this one as they work well for revenue display */}
         <TabsContent value="revenue" className="space-y-4">
           <Card>
             <CardHeader>
