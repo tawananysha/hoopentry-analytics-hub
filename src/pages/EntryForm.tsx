@@ -27,7 +27,7 @@ import {
   Banknote, 
   Ticket, 
   UserCheck,
-  Child,
+  BabyIcon,
   GraduationCap,
   UserRound
 } from 'lucide-react';
@@ -326,7 +326,7 @@ const EntryForm: React.FC = () => {
                           <h3 className="font-bold text-lg">HoopEntry</h3>
                         </div>
                         <div className="px-3 py-1 bg-basketball-blue rounded-full text-white text-sm flex items-center gap-2">
-                          {ageCategory === 'Child' && <Child className="h-4 w-4" />}
+                          {ageCategory === 'Child' && <BabyIcon className="h-4 w-4" />}
                           {ageCategory === 'Student' && <GraduationCap className="h-4 w-4" />}
                           {ageCategory === 'Adult' && <UserRound className="h-4 w-4" />}
                           {ageCategory}
